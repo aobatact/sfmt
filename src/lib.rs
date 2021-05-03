@@ -47,7 +47,8 @@ pub mod paramed {
         packed::*,
         sfmt::{SfmtParams, SFMTMEXP},
     };
-    use rand_core::{impls, Error, RngCore, SeedableRng};
+    use rand_core::{Error, RngCore, SeedableRng};
+    use std::{mem::size_of, ptr};
 
     /// State of SFMT
     ///
@@ -131,7 +132,36 @@ pub mod paramed {
         }
 
         fn fill_bytes(&mut self, dest: &mut [u8]) {
-            impls::fill_bytes_via_next(self, dest)
+            unsafe {
+                let state_ptr = self.state.as_mut_ptr() as *mut u8;
+                let state_len = SFMTMEXP::<MEXP, MEXP_N>::SFMT_N32 * size_of::<u32>();
+                let mut dst = dest.as_mut_ptr();
+                let mut len = dest.len();
+                if self.idx < state_len {
+                    let current_ptr = state_ptr.add(self.idx as usize * size_of::<u32>());
+                    let consumed = state_len - self.idx * size_of::<u32>();
+                    if len < consumed {
+                        ptr::copy_nonoverlapping(current_ptr, dst, len);
+                        self.idx += (len + 3) / size_of::<u32>();
+                        return;
+                    } else {
+                        ptr::copy_nonoverlapping(current_ptr, dst, consumed);
+                        len -= consumed;
+                        dst = dst.add(consumed);
+                    }
+                }
+                while {
+                    self.gen_all();
+                    len >= state_len
+                } {
+                    ptr::copy_nonoverlapping(state_ptr, dst, state_len);
+                    len -= state_len;
+                    dst = dst.add(state_len);
+                }
+                ptr::copy_nonoverlapping(state_ptr, dst, len);
+                self.idx = (len + 3) / size_of::<u32>();
+            }
+            //impls::fill_bytes_via_next(self, dest)
         }
 
         fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
@@ -198,5 +228,17 @@ mod tests {
                 let _r = rng.next_u32();
             } // shift SFMT.idx randomly
         }
+    }
+
+    #[test]
+    fn fill_bytes_test() {
+        let mut rng = SFMT19937::seed_from_u64(0);
+        let mut values = [0_u8; 20];
+        rng.fill_bytes(&mut values);
+        let mut rng1 = SFMT19937::seed_from_u64(0);
+        let mut values1 = [0_u8; 20];
+        rand_core::impls::fill_bytes_via_next(&mut rng1, &mut values1);
+        assert_eq!(values, values1);// works with big endian too?
+        assert_eq!(rng.idx, rng1.idx);
     }
 }
