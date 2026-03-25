@@ -1,5 +1,5 @@
 use paste::paste;
-use rand_core::{RngCore, SeedableRng};
+use rand_core::{Rng, SeedableRng};
 use sfmt::*;
 use std::{fs, io, io::BufRead};
 

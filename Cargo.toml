@@ -14,16 +14,17 @@ license = "MIT"
 [features]
 default = ["thread_rng"]
 
-# The thread_rng feature requires the rand dependency
-thread_rng = ["rand/getrandom"]
+# The thread_rng feature requires the rand and getrandom dependencies
+thread_rng = ["rand/sys_rng", "getrandom"]
 
 [dependencies]
-rand = { version = "0.8.4", optional = true }
-rand_core = "0.6.3"
+rand = { version = "0.10", optional = true }
+rand_core = "0.10"
+getrandom = { version = "0.4", optional = true }
 
 [dev-dependencies]
-rand_xorshift = "0.3.0"
-rand_core = { version = "0.6", features=["getrandom"] }
+rand_xorshift = "0.5"
+rand_core = "0.10"
 paste = "1.0.5"
 
 [package.metadata.release]

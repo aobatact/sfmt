@@ -23,30 +23,7 @@ pub trait SfmtParams<const MEXP: usize, const MEXP_N: usize>: Sized {
     const SFMT_PARITY3: u32;
     const SFMT_PARITY4: u32;
 
-    fn mm_recursion(a: i32x4, b: i32x4, c: i32x4, d: i32x4) -> i32x4 {
-        #[cfg(target_arch = "x86")]
-        use std::arch::x86::*;
-        #[cfg(target_arch = "x86_64")]
-        use std::arch::x86_64::*;
-
-        unsafe {
-            let mask = new(
-                Self::SFMT_MSK1,
-                Self::SFMT_MSK2,
-                Self::SFMT_MSK3,
-                Self::SFMT_MSK4,
-            );
-            let y = _mm_srli_epi32(b, Self::SFMT_SR1);
-            let z = _mm_srli_si128(c, Self::SFMT_SR2);
-            let v = _mm_slli_epi32(d, Self::SFMT_SL1);
-            let z = _mm_xor_si128(z, a);
-            let z = _mm_xor_si128(z, v);
-            let x = _mm_slli_si128(a, Self::SFMT_SL2);
-            let y = _mm_and_si128(y, mask);
-            let z = _mm_xor_si128(z, x);
-            _mm_xor_si128(z, y)
-        }
-    }
+    fn mm_recursion(a: i32x4, b: i32x4, c: i32x4, d: i32x4) -> i32x4;
 
     fn sfmt_gen_rand_all(sfmt: &mut paramed::SFMT<MEXP, MEXP_N>) {
         let st = &mut sfmt.state;
@@ -143,6 +120,31 @@ macro_rules! parms_impl {
             const SFMT_PARITY2: u32 = $parity2;
             const SFMT_PARITY3: u32 = $parity3;
             const SFMT_PARITY4: u32 = $parity4;
+
+            fn mm_recursion(a: i32x4, b: i32x4, c: i32x4, d: i32x4) -> i32x4 {
+                #[cfg(target_arch = "x86")]
+                use std::arch::x86::*;
+                #[cfg(target_arch = "x86_64")]
+                use std::arch::x86_64::*;
+
+                unsafe {
+                    let mask = new(
+                        $msk1 as i32,
+                        $msk2 as i32,
+                        $msk3 as i32,
+                        $msk4 as i32,
+                    );
+                    let y = _mm_srli_epi32(b, $sr1);
+                    let z = _mm_srli_si128(c, $sr2);
+                    let v = _mm_slli_epi32(d, $sl1);
+                    let z = _mm_xor_si128(z, a);
+                    let z = _mm_xor_si128(z, v);
+                    let x = _mm_slli_si128(a, $sl2);
+                    let y = _mm_and_si128(y, mask);
+                    let z = _mm_xor_si128(z, x);
+                    _mm_xor_si128(z, y)
+                }
+            }
         }
     };
 }

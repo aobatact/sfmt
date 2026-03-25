@@ -4,7 +4,7 @@
 //! [stable SIMD]: https://github.com/rust-lang/rfcs/blob/master/text/2325-stable-simd.md
 //!
 //! ```
-//! use rand_core::{RngCore, SeedableRng};
+//! use rand_core::{Rng, SeedableRng};
 //! let mut rng = sfmt::SFMT19937::seed_from_u64(42);
 //! let r = rng.next_u32();
 //! println!("random u32 number = {}", r);
@@ -47,7 +47,9 @@ pub mod paramed {
         packed::*,
         sfmt::{SfmtParams, SFMTMEXP},
     };
-    use rand_core::{impls, Error, RngCore, SeedableRng};
+    use core::convert::Infallible;
+    use rand_core::{SeedableRng, TryRng};
+    use std::ptr;
 
     /// State of SFMT
     ///
@@ -82,7 +84,7 @@ pub mod paramed {
             let p = self.state.as_ptr() as *const u32;
             let val = unsafe {
                 let p = p.offset(self.idx as isize);
-                *(p as *const u64) // reinterpret cast [u32; 2] -> u64
+                ptr::read_unaligned(p as *const u64) // reinterpret cast [u32; 2] -> u64
             };
             self.idx += 2;
             val
@@ -111,38 +113,37 @@ pub mod paramed {
         }
     }
 
-    impl<const MEXP: usize, const MEXP_N: usize> RngCore for SFMT<MEXP, MEXP_N>
+    impl<const MEXP: usize, const MEXP_N: usize> TryRng for SFMT<MEXP, MEXP_N>
     where
         SFMTMEXP<MEXP, MEXP_N>: SfmtParams<MEXP, MEXP_N>,
     {
-        fn next_u32(&mut self) -> u32 {
+        type Error = Infallible;
+
+        fn try_next_u32(&mut self) -> Result<u32, Infallible> {
             if self.idx >= SFMTMEXP::<MEXP, MEXP_N>::SFMT_N32 {
                 self.gen_all();
             }
-            self.pop32()
+            Ok(self.pop32())
         }
 
-        fn next_u64(&mut self) -> u64 {
+        fn try_next_u64(&mut self) -> Result<u64, Infallible> {
             if self.idx >= SFMTMEXP::<MEXP, MEXP_N>::SFMT_N32 - 1 {
                 // drop last u32 if idx == N32-1
                 self.gen_all();
             }
-            self.pop64()
+            Ok(self.pop64())
         }
 
-        fn fill_bytes(&mut self, dest: &mut [u8]) {
-            impls::fill_bytes_via_next(self, dest)
-        }
-
-        fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-            Ok(self.fill_bytes(dest))
+        fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Infallible> {
+            rand_core::utils::fill_bytes_via_next_word(dest, || self.try_next_u32());
+            Ok(())
         }
     }
 }
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand_core::{RngCore, SeedableRng};
+    use rand_core::{Rng, SeedableRng};
 
     #[test]
     fn random_607() {

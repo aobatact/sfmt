@@ -1,13 +1,13 @@
 #![cfg(feature = "thread_rng")]
 
-use rand::Rng;
+use rand::RngExt;
 use std::thread;
 
 fn gen() -> Vec<u32> {
     let mut rng = sfmt::thread_rng();
     let mut v: Vec<u32> = Vec::new();
     for _ in 0..3 {
-        v.push(rng.gen());
+        v.push(rng.random());
     }
     v
 }
