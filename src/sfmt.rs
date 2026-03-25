@@ -50,8 +50,8 @@ pub trait SfmtParams<const MEXP: usize, const MEXP_N: usize>: Sized {
             Self::SFMT_PARITY3,
             Self::SFMT_PARITY4,
         ];
-        for i in 0..4 {
-            inner ^= extract(*st, i) & parity[i];
+        for (i, val) in parity.iter().enumerate() {
+            inner ^= extract(*st, i) & val;
         }
         for i in [16, 8, 4, 2, 1].iter() {
             inner ^= inner >> i;
@@ -60,15 +60,15 @@ pub trait SfmtParams<const MEXP: usize, const MEXP_N: usize>: Sized {
         if inner == 1 {
             return;
         }
-        for i in 0..4 {
+        for (i, val) in parity.iter().enumerate() {
             let mut work = 1_u32;
             for _ in 0..32 {
-                if (work & parity[i]) != 0 {
+                if (work & val) != 0 {
                     let val = extract(*st, i) ^ work;
                     insert(st, val as i32, i);
                     return;
                 }
-                work = work << 1;
+                work <<= 1;
             }
         }
     }
@@ -100,6 +100,7 @@ pub trait SfmtParams<const MEXP: usize, const MEXP_N: usize>: Sized {
     }
 }
 /// Wrapper for `MEXP` parameter.
+#[allow(clippy::upper_case_acronyms)]
 pub struct SFMTMEXP<const MEXP: usize, const MEXP_N: usize>;
 
 macro_rules! parms_impl {
@@ -128,12 +129,7 @@ macro_rules! parms_impl {
                 use std::arch::x86_64::*;
 
                 unsafe {
-                    let mask = new(
-                        $msk1 as i32,
-                        $msk2 as i32,
-                        $msk3 as i32,
-                        $msk4 as i32,
-                    );
+                    let mask = new($msk1 as i32, $msk2 as i32, $msk3 as i32, $msk4 as i32);
                     let y = _mm_srli_epi32(b, $sr1);
                     let z = _mm_srli_si128(c, $sr2);
                     let v = _mm_slli_epi32(d, $sl1);

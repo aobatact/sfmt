@@ -83,7 +83,7 @@ pub mod paramed {
         fn pop64(&mut self) -> u64 {
             let p = self.state.as_ptr() as *const u32;
             let val = unsafe {
-                let p = p.offset(self.idx as isize);
+                let p = p.add(self.idx);
                 ptr::read_unaligned(p as *const u64) // reinterpret cast [u32; 2] -> u64
             };
             self.idx += 2;
