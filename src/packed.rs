@@ -19,10 +19,10 @@ pub(crate) fn zero() -> i32x4 {
 pub(crate) fn extract(vals: i32x4, imm: usize) -> u32 {
     unsafe {
         match imm {
-            0 => _mm_extract_epi32(vals, 0) as u32,
-            1 => _mm_extract_epi32(vals, 1) as u32,
-            2 => _mm_extract_epi32(vals, 2) as u32,
-            3 => _mm_extract_epi32(vals, 3) as u32,
+            0 => _mm_extract_epi32::<0>(vals) as u32,
+            1 => _mm_extract_epi32::<1>(vals) as u32,
+            2 => _mm_extract_epi32::<2>(vals) as u32,
+            3 => _mm_extract_epi32::<3>(vals) as u32,
             _ => core::hint::unreachable_unchecked(),
         }
     }
@@ -31,10 +31,10 @@ pub(crate) fn extract(vals: i32x4, imm: usize) -> u32 {
 pub(crate) fn insert(vals: &mut i32x4, val: i32, imm: usize) {
     let updated = unsafe {
         match imm {
-            0 => _mm_insert_epi32(*vals, val, 0),
-            1 => _mm_insert_epi32(*vals, val, 1),
-            2 => _mm_insert_epi32(*vals, val, 2),
-            3 => _mm_insert_epi32(*vals, val, 3),
+            0 => _mm_insert_epi32::<0>(*vals, val),
+            1 => _mm_insert_epi32::<1>(*vals, val),
+            2 => _mm_insert_epi32::<2>(*vals, val),
+            3 => _mm_insert_epi32::<3>(*vals, val),
             _ => core::hint::unreachable_unchecked(),
         }
     };

@@ -130,12 +130,12 @@ macro_rules! parms_impl {
 
                 unsafe {
                     let mask = new($msk1 as i32, $msk2 as i32, $msk3 as i32, $msk4 as i32);
-                    let y = _mm_srli_epi32(b, $sr1);
-                    let z = _mm_srli_si128(c, $sr2);
-                    let v = _mm_slli_epi32(d, $sl1);
+                    let y = _mm_srli_epi32::<$sr1>(b);
+                    let z = _mm_srli_si128::<$sr2>(c);
+                    let v = _mm_slli_epi32::<$sl1>(d);
                     let z = _mm_xor_si128(z, a);
                     let z = _mm_xor_si128(z, v);
-                    let x = _mm_slli_si128(a, $sl2);
+                    let x = _mm_slli_si128::<$sl2>(a);
                     let y = _mm_and_si128(y, mask);
                     let z = _mm_xor_si128(z, x);
                     _mm_xor_si128(z, y)
