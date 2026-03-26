@@ -17,6 +17,9 @@ default = ["thread_rng"]
 # The thread_rng feature requires the rand and getrandom dependencies
 thread_rng = ["rand/sys_rng", "getrandom"]
 
+# Enable JavaScript-based entropy source for wasm32-unknown-unknown
+wasm_js = ["getrandom/wasm_js"]
+
 [dependencies]
 rand = { version = "0.10", optional = true }
 rand_core = "0.10"

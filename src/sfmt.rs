@@ -123,23 +123,16 @@ macro_rules! params_impl {
             const SFMT_PARITY4: u32 = $parity4;
 
             fn mm_recursion(a: i32x4, b: i32x4, c: i32x4, d: i32x4) -> i32x4 {
-                #[cfg(target_arch = "x86")]
-                use std::arch::x86::*;
-                #[cfg(target_arch = "x86_64")]
-                use std::arch::x86_64::*;
-
-                unsafe {
-                    let mask = new($msk1 as i32, $msk2 as i32, $msk3 as i32, $msk4 as i32);
-                    let y = _mm_srli_epi32::<$sr1>(b);
-                    let z = _mm_srli_si128::<$sr2>(c);
-                    let v = _mm_slli_epi32::<$sl1>(d);
-                    let z = _mm_xor_si128(z, a);
-                    let z = _mm_xor_si128(z, v);
-                    let x = _mm_slli_si128::<$sl2>(a);
-                    let y = _mm_and_si128(y, mask);
-                    let z = _mm_xor_si128(z, x);
-                    _mm_xor_si128(z, y)
-                }
+                let mask = new($msk1 as i32, $msk2 as i32, $msk3 as i32, $msk4 as i32);
+                let y = shr_epi32::<$sr1>(b);
+                let z = shr_si128::<$sr2>(c);
+                let v = shl_epi32::<$sl1>(d);
+                let z = xor(z, a);
+                let z = xor(z, v);
+                let x = shl_si128::<$sl2>(a);
+                let y = and(y, mask);
+                let z = xor(z, x);
+                xor(z, y)
             }
         }
     };
