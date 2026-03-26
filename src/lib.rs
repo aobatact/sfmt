@@ -135,7 +135,26 @@ pub mod paramed {
         }
 
         fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Infallible> {
-            rand_core::utils::fill_bytes_via_next_word(dest, || self.try_next_u32());
+            let n32 = SFMTMEXP::<MEXP, MEXP_N>::SFMT_N32;
+            let state_bytes = self.state.as_ptr() as *const u8;
+            let mut filled = 0;
+            while filled < dest.len() {
+                if self.idx >= n32 {
+                    self.gen_all();
+                }
+                let avail = (n32 - self.idx) * 4;
+                let need = dest.len() - filled;
+                let copy_len = avail.min(need);
+                unsafe {
+                    ptr::copy_nonoverlapping(
+                        state_bytes.add(self.idx * 4),
+                        dest.as_mut_ptr().add(filled),
+                        copy_len,
+                    );
+                }
+                filled += copy_len;
+                self.idx += copy_len.div_ceil(4); // advance by consumed u32 slots (round up)
+            }
             Ok(())
         }
     }
