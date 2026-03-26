@@ -103,7 +103,7 @@ pub trait SfmtParams<const MEXP: usize, const MEXP_N: usize>: Sized {
 #[allow(clippy::upper_case_acronyms)]
 pub struct SFMTMEXP<const MEXP: usize, const MEXP_N: usize>;
 
-macro_rules! parms_impl {
+macro_rules! params_impl {
     ($mexp : expr, $n : expr, $pos1 : expr, $sl1 : expr, $sl2 : expr, $sr1 : expr, $sr2 : expr,
         $msk1 : expr, $msk2 : expr, $msk3 : expr, $msk4 : expr,
         $parity1 : expr, $parity2 : expr, $parity3 : expr, $parity4 : expr) => {
@@ -145,7 +145,7 @@ macro_rules! parms_impl {
     };
 }
 
-parms_impl!(
+params_impl!(
     607,
     { 607 / 128 + 1 },
     2,
@@ -162,7 +162,7 @@ parms_impl!(
     0x0000_0000,
     0x5986_f054
 );
-parms_impl!(
+params_impl!(
     1279,
     { 1279 / 128 + 1 },
     7,
@@ -179,7 +179,7 @@ parms_impl!(
     0x0000_0000_u32,
     0x2000_0000_u32
 );
-parms_impl!(
+params_impl!(
     2281,
     { 2281 / 128 + 1 },
     12,
@@ -196,7 +196,7 @@ parms_impl!(
     0x0000_0000_u32,
     0x41df_a600_u32
 );
-parms_impl!(
+params_impl!(
     4253,
     { 4253 / 128 + 1 },
     17,
@@ -213,7 +213,7 @@ parms_impl!(
     0xb740_b3f8_u32,
     0x6c11_486d_u32
 );
-parms_impl!(
+params_impl!(
     11213,
     { 11213 / 128 + 1 },
     68,
@@ -230,7 +230,7 @@ parms_impl!(
     0xb740_b3f8_u32,
     0x6c11_486d_u32
 );
-parms_impl!(
+params_impl!(
     19937,
     { 19937 / 128 + 1 },
     122,
@@ -247,7 +247,7 @@ parms_impl!(
     0x0000_0000_u32,
     0x13c9_e684_u32
 );
-parms_impl!(
+params_impl!(
     44497,
     { 44497 / 128 + 1 },
     330,
@@ -264,7 +264,7 @@ parms_impl!(
     0xa3ac_4000_u32,
     0xecc1_327a_u32
 );
-parms_impl!(
+params_impl!(
     86243,
     { 86243 / 128 + 1 },
     366,
@@ -281,7 +281,7 @@ parms_impl!(
     0x0000_0000_u32,
     0xe952_8d85_u32
 );
-parms_impl!(
+params_impl!(
     132049,
     { 132049 / 128 + 1 },
     110,
@@ -298,7 +298,7 @@ parms_impl!(
     0xcb52_0000_u32,
     0xc7e9_1c7d_u32
 );
-parms_impl!(
+params_impl!(
     216091,
     { 216091 / 128 + 1 },
     627,
